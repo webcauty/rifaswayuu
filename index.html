@@ -1,0 +1,2334 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestor de Rifa 00 - 99 | Bolsos Wayuu</title>
+    <style>
+        /* =========================================================
+           VARIABLES DE DISEÑO Y BLINDAJE ANTI-DESBORDAMIENTO
+           ========================================================= */
+        :root {
+            --bg-page: #f4f7fb;
+            --bg-surface: #ffffff;
+            --bg-subtle: #f8fafc;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #64748b;
+            --border-light: #e2e8f0;
+            --border-medium: #cbd5e1;
+
+            --brand-primary: #4f46e5;
+            --brand-primary-hover: #4338ca;
+            --brand-accent: #7c3aed;
+            --brand-soft: #eef2ff;
+
+            --free-bg: #ecfdf5;
+            --free-border: #a7f3d0;
+            --free-text: #047857;
+            --free-badge: #d1fae5;
+
+            --pending-bg: #fffbeb;
+            --pending-border: #fde68a;
+            --pending-text: #b45309;
+            --pending-badge: #fef3c7;
+
+            --paid-bg: #eef2ff;
+            --paid-border: #c7d2fe;
+            --paid-text: #4338ca;
+            --paid-badge: #e0e7ff;
+
+            --danger: #e11d48;
+            --danger-hover: #be123c;
+            --danger-soft: #fff1f2;
+
+            --shadow-sm: 0 2px 8px rgba(15, 23, 42, 0.05);
+            --shadow-md: 0 8px 24px rgba(15, 23, 42, 0.08);
+            --shadow-lg: 0 20px 45px rgba(15, 23, 42, 0.16);
+
+            --radius-sm: 10px;
+            --radius-md: 14px;
+            --radius-lg: 20px;
+            --radius-full: 9999px;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html, body {
+            width: 100%;
+            max-width: 100%;
+            overflow-x: hidden;
+            background: linear-gradient(180deg, #eef2ff 0%, var(--bg-page) 240px, var(--bg-page) 100%);
+            color: var(--text-primary);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.45;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        button, input, select, textarea {
+            font-family: inherit;
+            color: inherit;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* =========================================================
+           CONTENEDOR PRINCIPAL
+           ========================================================= */
+        .app-shell {
+            width: 100%;
+            max-width: 1240px;
+            margin: 0 auto;
+            padding: 16px 14px 48px;
+            overflow-x: hidden;
+        }
+
+        @media (min-width: 640px) {
+            .app-shell {
+                padding: 24px 20px 56px;
+            }
+        }
+
+        /* =========================================================
+           ENCABEZADO DE RIFA (HERO)
+           ========================================================= */
+        .hero-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-lg);
+            padding: 18px 16px;
+            box-shadow: var(--shadow-md);
+            margin-bottom: 18px;
+            position: relative;
+            overflow: hidden;
+            max-width: 100%;
+        }
+
+        .hero-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--brand-primary), var(--brand-accent), #10b981);
+        }
+
+        @media (min-width: 640px) {
+            .hero-card {
+                padding: 24px 26px;
+            }
+        }
+
+        .hero-top {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        @media (min-width: 860px) {
+            .hero-top {
+                flex-direction: row;
+                align-items: flex-start;
+                justify-content: space-between;
+            }
+        }
+
+        .hero-title-group {
+            min-width: 0;
+            flex: 1;
+        }
+
+        .live-pill-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .live-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #ecfdf5;
+            color: #047857;
+            border: 1px solid #a7f3d0;
+            padding: 4px 10px;
+            border-radius: var(--radius-full);
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            max-width: 100%;
+        }
+
+        .live-badge.is-local {
+            background: #fffbeb;
+            color: #b45309;
+            border-color: #fde68a;
+        }
+
+        .live-badge.is-error {
+            background: var(--danger-soft);
+            color: var(--danger);
+            border-color: #fecdd3;
+        }
+
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #10b981;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.22);
+            animation: pulseDot 2s infinite;
+            flex-shrink: 0;
+        }
+
+        .live-badge.is-local .live-dot {
+            background: #f59e0b;
+            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.22);
+        }
+
+        .live-badge.is-error .live-dot {
+            background: var(--danger);
+            box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.22);
+            animation: none;
+        }
+
+        @keyframes pulseDot {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.25); opacity: 0.75; }
+        }
+
+        .prize-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--brand-soft);
+            color: var(--brand-primary);
+            border: 1px solid #c7d2fe;
+            padding: 4px 11px;
+            border-radius: var(--radius-full);
+            font-size: 0.75rem;
+            font-weight: 700;
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .hero-title {
+            font-size: 1.45rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            letter-spacing: -0.02em;
+            word-break: break-word;
+        }
+
+        @media (min-width: 640px) {
+            .hero-title {
+                font-size: 1.85rem;
+            }
+        }
+
+        .hero-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px 18px;
+            margin-top: 8px;
+            font-size: 0.86rem;
+            color: var(--text-secondary);
+        }
+
+        .meta-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            min-width: 0;
+        }
+
+        .meta-item strong {
+            color: var(--text-primary);
+            font-weight: 700;
+        }
+
+        .hero-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            width: 100%;
+        }
+
+        @media (min-width: 860px) {
+            .hero-actions {
+                width: auto;
+                justify-content: flex-end;
+                flex-shrink: 0;
+            }
+        }
+
+        /* =========================================================
+           BOTONES GENERALES
+           ========================================================= */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            padding: 9px 14px;
+            border-radius: var(--radius-sm);
+            font-size: 0.84rem;
+            font-weight: 700;
+            border: 1px solid transparent;
+            cursor: pointer;
+            transition: transform 0.14s ease, box-shadow 0.18s ease, background-color 0.18s ease, border-color 0.18s ease;
+            white-space: nowrap;
+            min-height: 40px;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--brand-primary), var(--brand-accent));
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
+        }
+
+        .btn-primary:hover {
+            filter: brightness(1.05);
+            box-shadow: 0 6px 16px rgba(79, 70, 229, 0.34);
+        }
+
+        .btn-secondary {
+            background: var(--bg-surface);
+            color: var(--text-primary);
+            border-color: var(--border-medium);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-subtle);
+            border-color: #94a3b8;
+        }
+
+        .btn-soft {
+            background: var(--brand-soft);
+            color: var(--brand-primary);
+            border-color: #c7d2fe;
+        }
+
+        .btn-soft:hover {
+            background: #e0e7ff;
+        }
+
+        .btn-success-soft {
+            background: #ecfdf5;
+            color: #047857;
+            border-color: #a7f3d0;
+        }
+
+        .btn-success-soft:hover {
+            background: #d1fae5;
+        }
+
+        .btn-danger-soft {
+            background: var(--danger-soft);
+            color: var(--danger);
+            border-color: #fecdd3;
+        }
+
+        .btn-danger-soft:hover {
+            background: #ffe4e6;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(225, 29, 72, 0.24);
+        }
+
+        .btn-danger:hover {
+            background: var(--danger-hover);
+        }
+
+        .btn-sm {
+            padding: 6px 11px;
+            min-height: 34px;
+            font-size: 0.78rem;
+            border-radius: 8px;
+        }
+
+        /* =========================================================
+           TARJETAS DE ESTADÍSTICAS Y BARRA DE PROGRESO
+           ========================================================= */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        @media (min-width: 768px) {
+            .stats-grid {
+                grid-template-columns: repeat(4, minmax(0, 1fr));
+                gap: 14px;
+            }
+        }
+
+        .stat-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-md);
+            padding: 14px 16px;
+            box-shadow: var(--shadow-sm);
+            min-width: 0;
+            transition: transform 0.16s ease, box-shadow 0.16s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .stat-label {
+            font-size: 0.74rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 6px;
+        }
+
+        .stat-value {
+            font-size: 1.45rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            font-variant-numeric: tabular-nums;
+            line-height: 1.15;
+        }
+
+        @media (min-width: 640px) {
+            .stat-value {
+                font-size: 1.65rem;
+            }
+        }
+
+        .stat-sub {
+            font-size: 0.76rem;
+            color: var(--text-secondary);
+            margin-top: 4px;
+            font-variant-numeric: tabular-nums;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .stat-free .stat-value { color: #059669; }
+        .stat-pending .stat-value { color: #d97706; }
+        .stat-paid .stat-value { color: #4f46e5; }
+        .stat-money .stat-value { color: #0f172a; }
+
+        .progress-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-md);
+            padding: 14px 16px;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 18px;
+        }
+
+        .progress-header {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+            font-size: 0.84rem;
+        }
+
+        .progress-header strong {
+            color: var(--text-primary);
+        }
+
+        .progress-header span {
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .progress-track {
+            width: 100%;
+            height: 12px;
+            background: #e2e8f0;
+            border-radius: var(--radius-full);
+            overflow: hidden;
+            display: flex;
+        }
+
+        .progress-bar-paid {
+            height: 100%;
+            background: linear-gradient(90deg, #4f46e5, #6366f1);
+            transition: width 0.35s ease;
+        }
+
+        .progress-bar-pending {
+            height: 100%;
+            background: linear-gradient(90deg, #f59e0b, #fbbf24);
+            transition: width 0.35s ease;
+        }
+
+        .progress-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+            margin-top: 10px;
+            font-size: 0.76rem;
+            color: var(--text-secondary);
+        }
+
+        .legend-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 600;
+        }
+
+        .dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        /* =========================================================
+           BARRA DE FILTROS Y BUSCADOR
+           ========================================================= */
+        .toolbar-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-md);
+            padding: 14px;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        @media (min-width: 768px) {
+            .toolbar-card {
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+            }
+        }
+
+        .filter-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            min-width: 0;
+        }
+
+        .filter-btn {
+            padding: 8px 13px;
+            border-radius: var(--radius-full);
+            font-size: 0.8rem;
+            font-weight: 700;
+            background: var(--bg-subtle);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-light);
+            cursor: pointer;
+            transition: all 0.16s ease;
+            min-height: 36px;
+        }
+
+        .filter-btn:hover {
+            background: #f1f5f9;
+            color: var(--text-primary);
+        }
+
+        .filter-btn.active {
+            background: var(--brand-primary);
+            color: #ffffff;
+            border-color: var(--brand-primary);
+            box-shadow: 0 3px 10px rgba(79, 70, 229, 0.25);
+        }
+
+        .search-box {
+            position: relative;
+            width: 100%;
+            min-width: 0;
+        }
+
+        @media (min-width: 768px) {
+            .search-box {
+                max-width: 310px;
+            }
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            pointer-events: none;
+            display: flex;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 9px 36px 9px 36px;
+            border-radius: var(--radius-full);
+            border: 1px solid var(--border-medium);
+            background: var(--bg-subtle);
+            font-size: 0.86rem;
+            min-height: 40px;
+            transition: border-color 0.16s ease, background-color 0.16s ease, box-shadow 0.16s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            background: #ffffff;
+            border-color: var(--brand-primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.14);
+        }
+
+        .clear-search-btn {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: none;
+            background: #e2e8f0;
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            font-weight: 800;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .clear-search-btn.visible {
+            display: inline-flex;
+        }
+
+        /* =========================================================
+           CUADRÍCULA PRINCIPAL DEL 00 AL 99
+           ========================================================= */
+        .board-section {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-lg);
+            padding: 14px 12px;
+            box-shadow: var(--shadow-sm);
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+
+        @media (min-width: 640px) {
+            .board-section {
+                padding: 20px;
+            }
+        }
+
+        .board-header {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+
+        .board-header h2 {
+            font-size: 1rem;
+            font-weight: 800;
+            color: var(--text-primary);
+        }
+
+        .board-header p {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+        }
+
+        /* 4 columnas <390px, 5 en móviles, 8 en tabletas, 10 en escritorio */
+        .numbers-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 7px;
+            width: 100%;
+            max-width: 100%;
+        }
+
+        @media (min-width: 390px) {
+            .numbers-grid {
+                grid-template-columns: repeat(5, minmax(0, 1fr));
+                gap: 8px;
+            }
+        }
+
+        @media (min-width: 768px) {
+            .numbers-grid {
+                grid-template-columns: repeat(8, minmax(0, 1fr));
+                gap: 10px;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .numbers-grid {
+                grid-template-columns: repeat(10, minmax(0, 1fr));
+                gap: 10px;
+            }
+        }
+
+        .ticket-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            min-height: 76px;
+            padding: 7px 5px;
+            border-radius: var(--radius-sm);
+            border: 1.5px solid transparent;
+            cursor: pointer;
+            text-align: center;
+            min-width: 0;
+            max-width: 100%;
+            position: relative;
+            transition: transform 0.14s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+        }
+
+        @media (min-width: 640px) {
+            .ticket-btn {
+                min-height: 84px;
+                padding: 8px 6px;
+            }
+        }
+
+        .ticket-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+            z-index: 2;
+        }
+
+        .ticket-btn:active {
+            transform: scale(0.97);
+        }
+
+        .ticket-btn.is-available {
+            background: var(--free-bg);
+            border-color: var(--free-border);
+            color: var(--free-text);
+        }
+
+        .ticket-btn.is-available:hover {
+            border-color: #34d399;
+        }
+
+        .ticket-btn.is-pending {
+            background: var(--pending-bg);
+            border-color: var(--pending-border);
+            color: var(--pending-text);
+        }
+
+        .ticket-btn.is-pending:hover {
+            border-color: #f59e0b;
+        }
+
+        .ticket-btn.is-paid {
+            background: var(--paid-bg);
+            border-color: var(--paid-border);
+            color: var(--paid-text);
+        }
+
+        .ticket-btn.is-paid:hover {
+            border-color: #818cf8;
+        }
+
+        .ticket-status-tag {
+            font-size: 0.62rem;
+            font-weight: 800;
+            letter-spacing: 0.02em;
+            text-transform: uppercase;
+            padding: 2px 6px;
+            border-radius: var(--radius-full);
+            line-height: 1.1;
+            max-width: 100%;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .is-available .ticket-status-tag {
+            background: var(--free-badge);
+            color: var(--free-text);
+        }
+
+        .is-pending .ticket-status-tag {
+            background: var(--pending-badge);
+            color: var(--pending-text);
+        }
+
+        .is-paid .ticket-status-tag {
+            background: var(--paid-badge);
+            color: var(--paid-text);
+        }
+
+        .ticket-number {
+            font-size: 1.18rem;
+            font-weight: 900;
+            letter-spacing: -0.02em;
+            font-variant-numeric: tabular-nums;
+            line-height: 1.15;
+            margin: 2px 0;
+        }
+
+        @media (min-width: 640px) {
+            .ticket-number {
+                font-size: 1.32rem;
+            }
+        }
+
+        .ticket-owner {
+            font-size: 0.68rem;
+            font-weight: 700;
+            width: 100%;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            opacity: 0.92;
+        }
+
+        .empty-results {
+            text-align: center;
+            padding: 40px 16px;
+            color: var(--text-secondary);
+        }
+
+        .empty-results p {
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        /* =========================================================
+           MODALES Y FORMULARIOS
+           ========================================================= */
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.52);
+            backdrop-filter: blur(3px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 14px;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .modal-backdrop.open {
+            display: flex;
+            animation: fadeIn 0.16s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-lg);
+            width: 100%;
+            max-width: 460px;
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+            max-height: calc(100vh - 28px);
+            display: flex;
+            flex-direction: column;
+            animation: slideUp 0.18s ease;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(10px) scale(0.985); opacity: 0.85; }
+            to { transform: translateY(0) scale(1); opacity: 1; }
+        }
+
+        .modal-header {
+            padding: 15px 18px;
+            border-bottom: 1px solid var(--border-light);
+            background: var(--bg-subtle);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .modal-header-danger {
+            background: var(--danger-soft);
+            border-bottom-color: #fecdd3;
+        }
+
+        .modal-title-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 0;
+        }
+
+        .modal-num-badge {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.15rem;
+            font-weight: 900;
+            color: #ffffff;
+            background: var(--brand-primary);
+            flex-shrink: 0;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .modal-title {
+            font-size: 1rem;
+            font-weight: 800;
+            color: var(--text-primary);
+        }
+
+        .modal-subtitle {
+            font-size: 0.76rem;
+            color: var(--text-muted);
+        }
+
+        .modal-close {
+            width: 34px;
+            height: 34px;
+            border-radius: 9px;
+            border: 1px solid var(--border-light);
+            background: var(--bg-surface);
+            color: var(--text-secondary);
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .modal-close:hover {
+            background: #f1f5f9;
+            color: var(--text-primary);
+        }
+
+        .modal-body {
+            padding: 16px 18px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .modal-footer {
+            padding: 13px 18px;
+            border-top: 1px solid var(--border-light);
+            background: var(--bg-subtle);
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .modal-footer-end {
+            justify-content: flex-end;
+            margin-left: auto;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 6px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-medium);
+            background: #ffffff;
+            font-size: 0.9rem;
+            min-height: 42px;
+            transition: border-color 0.16s ease, box-shadow 0.16s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--brand-primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.14);
+        }
+
+        .form-help {
+            font-size: 0.74rem;
+            color: var(--text-muted);
+            margin-top: 5px;
+        }
+
+        .status-pills {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 8px;
+        }
+
+        .status-radio-label {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .status-radio-label input {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .status-radio-chip {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 9px 8px;
+            border-radius: var(--radius-sm);
+            border: 1.5px solid var(--border-medium);
+            background: var(--bg-subtle);
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            font-weight: 800;
+            transition: all 0.15s ease;
+        }
+
+        .status-radio-label input[value="available"]:checked + .status-radio-chip {
+            background: var(--free-bg);
+            border-color: #10b981;
+            color: var(--free-text);
+        }
+
+        .status-radio-label input[value="pending"]:checked + .status-radio-chip {
+            background: var(--pending-bg);
+            border-color: #f59e0b;
+            color: var(--pending-text);
+        }
+
+        .status-radio-label input[value="paid"]:checked + .status-radio-chip {
+            background: var(--paid-bg);
+            border-color: var(--brand-primary);
+            color: var(--paid-text);
+        }
+
+        /* Caja de teléfono enmascarado y desbloqueo */
+        .phone-privacy-card {
+            background: var(--bg-subtle);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-sm);
+            padding: 10px 12px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .masked-phone-text {
+            font-size: 0.92rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            letter-spacing: 0.04em;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .password-wrap {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .password-wrap .form-input {
+            padding-right: 42px;
+        }
+
+        .toggle-pass-btn {
+            position: absolute;
+            right: 8px;
+            width: 30px;
+            height: 30px;
+            border-radius: 7px;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .toggle-pass-btn:hover {
+            background: #e2e8f0;
+            color: var(--text-primary);
+        }
+
+        .error-text {
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: var(--danger);
+            margin-top: 6px;
+        }
+
+        .shake {
+            animation: shakeAnim 0.28s ease;
+            border-color: var(--danger) !important;
+        }
+
+        @keyframes shakeAnim {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        /* =========================================================
+           TOAST DE NOTIFICACIONES
+           ========================================================= */
+        .toast-container {
+            position: fixed;
+            bottom: 16px;
+            right: 16px;
+            left: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 8px;
+            z-index: 2000;
+            pointer-events: none;
+        }
+
+        .toast {
+            pointer-events: auto;
+            background: #0f172a;
+            color: #ffffff;
+            padding: 11px 16px;
+            border-radius: var(--radius-sm);
+            font-size: 0.84rem;
+            font-weight: 600;
+            box-shadow: var(--shadow-lg);
+            max-width: 380px;
+            border-left: 4px solid #10b981;
+            animation: slideUp 0.18s ease;
+        }
+
+        .toast.error {
+            border-left-color: var(--danger);
+        }
+    </style>
+</head>
+<body>
+    <div class="app-shell">
+        <!-- ENCABEZADO PRINCIPAL -->
+        <header class="hero-card">
+            <div class="hero-top">
+                <div class="hero-title-group">
+                    <div class="live-pill-row">
+                        <span id="live-sync-badge" class="live-badge is-local" title="Estado de sincronización en tiempo real">
+                            <span class="live-dot"></span>
+                            <span id="live-sync-text">Disponibilidad en tiempo real</span>
+                        </span>
+                        <span class="prize-chip" id="header-prize-chip">
+                            Premio: Bolsos Wayuu
+                        </span>
+                    </div>
+                    <h1 class="hero-title" id="header-title">Gestor de Rifa 00 - 99</h1>
+                    <div class="hero-meta">
+                        <div class="meta-item">
+                            <span>Premio:</span>
+                            <strong id="meta-prize">Bolsos Wayuu</strong>
+                        </div>
+                        <div class="meta-item">
+                            <span>Valor boleta:</span>
+                            <strong id="meta-price">$10.000</strong>
+                        </div>
+                        <div class="meta-item">
+                            <span>Meta (100 boletas):</span>
+                            <strong id="meta-goal">$1.000.000</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="hero-actions">
+                    <button type="button" class="btn btn-secondary" onclick="openConfigModal()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                        Configurar Rifa
+                    </button>
+                    <button type="button" class="btn btn-success-soft" onclick="exportToCSV()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        Exportar CSV
+                    </button>
+                    <button type="button" class="btn btn-danger-soft" onclick="openResetModal()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+                        Reiniciar rifa
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- ESTADÍSTICAS EN TIEMPO REAL -->
+        <section class="stats-grid" aria-label="Resumen de boletas y recaudación">
+            <div class="stat-card stat-free">
+                <div class="stat-label">Disponibles</div>
+                <div class="stat-value" id="stat-available">100</div>
+                <div class="stat-sub" id="stat-available-sub">Listas para apartar</div>
+            </div>
+
+            <div class="stat-card stat-pending">
+                <div class="stat-label">Reservadas / Pendientes</div>
+                <div class="stat-value" id="stat-pending">0</div>
+                <div class="stat-sub" id="stat-pending-sub">Por confirmar pago ($0)</div>
+            </div>
+
+            <div class="stat-card stat-paid">
+                <div class="stat-label">Pagadas</div>
+                <div class="stat-value" id="stat-paid">0</div>
+                <div class="stat-sub" id="stat-paid-sub">Boletas confirmadas</div>
+            </div>
+
+            <div class="stat-card stat-money">
+                <div class="stat-label">Recaudado</div>
+                <div class="stat-value" id="stat-collected">$0</div>
+                <div class="stat-sub" id="stat-goal-sub">Meta: $1.000.000</div>
+            </div>
+        </section>
+
+        <!-- BARRA DE PROGRESO DE RECAUDACIÓN Y OCUPACIÓN -->
+        <section class="progress-card" aria-label="Avance de la rifa">
+            <div class="progress-header">
+                <strong id="progress-label">Avance de recaudación y ocupación (00 - 99)</strong>
+                <span id="progress-summary">$0 de $1.000.000 recaudado · 0% ocupado</span>
+            </div>
+            <div class="progress-track">
+                <div id="bar-paid" class="progress-bar-paid" style="width: 0%;"></div>
+                <div id="bar-pending" class="progress-bar-pending" style="width: 0%;"></div>
+            </div>
+            <div class="progress-legend">
+                <span class="legend-item"><span class="dot" style="background:#4f46e5;"></span>Pagadas</span>
+                <span class="legend-item"><span class="dot" style="background:#f59e0b;"></span>Reservadas / Pendientes</span>
+                <span class="legend-item"><span class="dot" style="background:#10b981;"></span>Disponibles</span>
+            </div>
+        </section>
+
+        <!-- FILTROS Y BUSCADOR -->
+        <section class="toolbar-card" aria-label="Filtros y búsqueda">
+            <div class="filter-group" role="group" aria-label="Filtrar por estado">
+                <button type="button" class="filter-btn active" data-filter="all" onclick="setFilter('all')">Todas (100)</button>
+                <button type="button" class="filter-btn" data-filter="available" onclick="setFilter('available')">Disponibles (100)</button>
+                <button type="button" class="filter-btn" data-filter="pending" onclick="setFilter('pending')">Pendientes (0)</button>
+                <button type="button" class="filter-btn" data-filter="paid" onclick="setFilter('paid')">Pagadas (0)</button>
+            </div>
+
+            <div class="search-box">
+                <span class="search-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                </span>
+                <input type="text" id="search-input" class="search-input" placeholder="Buscar número (00-99) o nombre..." oninput="handleSearch(this.value)">
+                <button type="button" id="clear-search-btn" class="clear-search-btn" onclick="clearSearch()" title="Limpiar búsqueda">✕</button>
+            </div>
+        </section>
+
+        <!-- TABLERO DEL 00 AL 99 -->
+        <main class="board-section">
+            <div class="board-header">
+                <h2>Tablero de Boletas (00 al 99)</h2>
+                <p>Toca cualquier número para registrar o consultar su estado en vivo</p>
+            </div>
+
+            <div id="numbers-grid" class="numbers-grid"></div>
+
+            <div id="empty-state" class="empty-results hidden">
+                <p>No se encontraron boletas con ese filtro o búsqueda.</p>
+                <button type="button" class="btn btn-soft btn-sm" onclick="resetFilters()">Mostrar todas las boletas</button>
+            </div>
+        </main>
+    </div>
+
+    <!-- MODAL 1: REGISTRO Y GESTIÓN DE BOLETA -->
+    <div id="ticket-modal" class="modal-backdrop" onclick="if (event.target === this) closeTicketModal()">
+        <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="ticket-modal-title">
+            <div class="modal-header">
+                <div class="modal-title-group">
+                    <div id="ticket-modal-badge" class="modal-num-badge">00</div>
+                    <div>
+                        <h3 id="ticket-modal-title" class="modal-title">Boleta #00</h3>
+                        <p id="ticket-modal-subtitle" class="modal-subtitle">Disponible · $10.000</p>
+                    </div>
+                </div>
+                <button type="button" class="modal-close" onclick="closeTicketModal()" aria-label="Cerrar">✕</button>
+            </div>
+
+            <form onsubmit="saveTicket(event)">
+                <div class="modal-body">
+                    <input type="hidden" id="edit-ticket-number">
+
+                    <div>
+                        <label class="form-label">Estado de la boleta</label>
+                        <div class="status-pills">
+                            <label class="status-radio-label">
+                                <input type="radio" name="ticket-status" value="available" onchange="handleTicketStatusChange()">
+                                <span class="status-radio-chip">Libre</span>
+                            </label>
+                            <label class="status-radio-label">
+                                <input type="radio" name="ticket-status" value="pending" onchange="handleTicketStatusChange()">
+                                <span class="status-radio-chip">Pendiente</span>
+                            </label>
+                            <label class="status-radio-label">
+                                <input type="radio" name="ticket-status" value="paid" onchange="handleTicketStatusChange()">
+                                <span class="status-radio-chip">Pagado</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div id="buyer-fields-group" style="display:flex; flex-direction:column; gap:12px;">
+                        <div>
+                            <label for="buyer-name" class="form-label">Nombre del comprador *</label>
+                            <input type="text" id="buyer-name" class="form-input" placeholder="Ej. Valentina Gómez">
+                        </div>
+
+                        <div>
+                            <label for="buyer-phone" class="form-label">Número de teléfono</label>
+
+                            <!-- Vista enmascarada cuando ya existe teléfono guardado -->
+                            <div id="masked-phone-box" class="phone-privacy-card hidden">
+                                <div>
+                                    <div style="font-size:0.7rem; color:#64748b; font-weight:700;">Teléfono protegido (últimos 3 dígitos)</div>
+                                    <div id="masked-phone-display" class="masked-phone-text">••••••123</div>
+                                </div>
+                                <button type="button" id="reveal-phone-btn" class="btn btn-soft btn-sm" onclick="openPhonePasswordModal()">
+                                    Ver teléfono completo
+                                </button>
+                                <button type="button" id="hide-phone-btn" class="btn btn-secondary btn-sm hidden" onclick="maskPhoneAgain()">
+                                    Ocultar completo
+                                </button>
+                            </div>
+
+                            <!-- Input editable: visible si no hay teléfono previo o al desbloquear -->
+                            <input type="tel" id="buyer-phone" class="form-input" placeholder="Ej. 300 123 4567" oninput="handlePhoneInputChange()">
+                            <p id="phone-privacy-help" class="form-help">
+                                Al guardar un teléfono, se mostrará solo con los últimos 3 dígitos hasta usar "Ver teléfono completo".
+                            </p>
+                        </div>
+
+                        <div>
+                            <label for="buyer-notes" class="form-label">Notas</label>
+                            <input type="text" id="buyer-notes" class="form-input" placeholder="Ej. Abono o detalle de entrega...">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" id="release-ticket-btn" class="btn btn-danger-soft btn-sm" onclick="releaseCurrentTicket()">
+                        Liberar número
+                    </button>
+                    <div class="modal-footer-end">
+                        <button type="button" class="btn btn-secondary" onclick="closeTicketModal()">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Guardar</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 2: CONTRASEÑA PARA VER TELÉFONO COMPLETO ('pegasso') -->
+    <div id="phone-password-modal" class="modal-backdrop" onclick="if (event.target === this) closePhonePasswordModal()">
+        <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="phone-pass-title">
+            <div class="modal-header">
+                <div class="modal-title-group">
+                    <div>
+                        <h3 id="phone-pass-title" class="modal-title">Ver teléfono completo</h3>
+                        <p class="modal-subtitle">Ingresa la contraseña para revelar el número</p>
+                    </div>
+                </div>
+                <button type="button" class="modal-close" onclick="closePhonePasswordModal()" aria-label="Cerrar">✕</button>
+            </div>
+
+            <form onsubmit="verifyPhonePassword(event)">
+                <div class="modal-body">
+                    <p style="font-size:0.84rem; color:var(--text-secondary);">
+                        Por privacidad, solo se muestran los últimos 3 dígitos. Escribe la contraseña para ver el número completo.
+                    </p>
+                    <div>
+                        <label for="phone-password-input" class="form-label">Contraseña *</label>
+                        <div class="password-wrap">
+                            <input type="password" id="phone-password-input" class="form-input" placeholder="Escribe la contraseña" autocomplete="off" oninput="clearPhonePasswordError()">
+                            <button type="button" class="toggle-pass-btn" onclick="togglePasswordVisibility('phone-password-input')" title="Mostrar u ocultar contraseña">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                            </button>
+                        </div>
+                        <p id="phone-password-error" class="error-text hidden">Contraseña incorrecta. Inténtalo de nuevo.</p>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <div class="modal-footer-end">
+                        <button type="button" class="btn btn-secondary" onclick="closePhonePasswordModal()">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Ver teléfono completo</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 3: CONFIGURAR RIFA (PREMIO Y VALOR DE BOLETA) -->
+    <div id="config-modal" class="modal-backdrop" onclick="if (event.target === this) closeConfigModal()">
+        <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="config-modal-title">
+            <div class="modal-header">
+                <div>
+                    <h3 id="config-modal-title" class="modal-title">Configuración de la Rifa</h3>
+                    <p class="modal-subtitle">Edita el premio y el valor de cada boleta</p>
+                </div>
+                <button type="button" class="modal-close" onclick="closeConfigModal()" aria-label="Cerrar">✕</button>
+            </div>
+
+            <form onsubmit="saveConfig(event)">
+                <div class="modal-body">
+                    <div>
+                        <label for="cfg-title" class="form-label">Título de la rifa</label>
+                        <input type="text" id="cfg-title" class="form-input" required>
+                    </div>
+                    <div>
+                        <label for="cfg-prize" class="form-label">Premio</label>
+                        <input type="text" id="cfg-prize" class="form-input" required>
+                    </div>
+                    <div>
+                        <label for="cfg-price" class="form-label">Valor por boleta ($)</label>
+                        <input type="number" id="cfg-price" class="form-input" min="0" step="500" required>
+                        <p class="form-help">Predeterminado: $10.000 (100 boletas = $1.000.000 de meta).</p>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <div class="modal-footer-end">
+                        <button type="button" class="btn btn-secondary" onclick="closeConfigModal()">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Guardar cambios</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 4: REINICIAR RIFA CON CÓDIGO 'pegasso' -->
+    <div id="reset-modal" class="modal-backdrop" onclick="if (event.target === this) closeResetModal()">
+        <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="reset-modal-title">
+            <div class="modal-header modal-header-danger">
+                <div>
+                    <h3 id="reset-modal-title" class="modal-title" style="color:var(--danger-hover);">Reiniciar rifa (00 al 99)</h3>
+                    <p class="modal-subtitle" style="color:var(--danger);">Se borrarán todos los registros actuales</p>
+                </div>
+                <button type="button" class="modal-close" onclick="closeResetModal()" aria-label="Cerrar">✕</button>
+            </div>
+
+            <form onsubmit="confirmResetRaffle(event)">
+                <div class="modal-body">
+                    <p style="font-size:0.85rem; color:var(--text-secondary);">
+                        Esta acción pondrá todas las boletas del <strong>00 al 99</strong> en estado <strong>Libre</strong>. Ingresa el código de seguridad para confirmar.
+                    </p>
+
+                    <div>
+                        <label for="reset-code-input" class="form-label">Código de seguridad *</label>
+                        <div class="password-wrap">
+                            <input type="password" id="reset-code-input" class="form-input" placeholder="Ingresa el código de seguridad" autocomplete="off" oninput="clearResetError()">
+                            <button type="button" class="toggle-pass-btn" onclick="togglePasswordVisibility('reset-code-input')" title="Mostrar u ocultar código">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                            </button>
+                        </div>
+                        <p id="reset-code-error" class="error-text hidden">Código incorrecto. Verifica e inténtalo de nuevo.</p>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <div class="modal-footer-end">
+                        <button type="button" class="btn btn-secondary" onclick="closeResetModal()">Cancelar</button>
+                        <button type="submit" class="btn btn-danger">Reiniciar rifa</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 5: CONTRASEÑA PARA LIBERAR NÚMERO ('pegasso') -->
+    <div id="release-password-modal" class="modal-backdrop" onclick="if (event.target === this) closeReleasePasswordModal()">
+        <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="release-pass-title">
+            <div class="modal-header modal-header-danger">
+                <div>
+                    <h3 id="release-pass-title" class="modal-title" style="color:var(--danger-hover);">Liberar boleta <span id="release-ticket-badge">#00</span></h3>
+                    <p class="modal-subtitle" style="color:var(--danger);">Se borrarán comprador, teléfono y notas de este número</p>
+                </div>
+                <button type="button" class="modal-close" onclick="closeReleasePasswordModal()" aria-label="Cerrar">✕</button>
+            </div>
+
+            <form onsubmit="confirmReleaseWithPassword(event)">
+                <div class="modal-body">
+                    <p style="font-size:0.84rem; color:var(--text-secondary);">
+                        Ingresa la contraseña para confirmar que deseas liberar la boleta <strong id="release-ticket-text">#00</strong> y dejarla en estado <strong>Libre</strong>.
+                    </p>
+
+                    <div>
+                        <label for="release-password-input" class="form-label">Contraseña *</label>
+                        <div class="password-wrap">
+                            <input type="password" id="release-password-input" class="form-input" placeholder="Escribe la contraseña" autocomplete="off" oninput="clearReleasePasswordError()">
+                            <button type="button" class="toggle-pass-btn" onclick="togglePasswordVisibility('release-password-input')" title="Mostrar u ocultar contraseña">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                            </button>
+                        </div>
+                        <p id="release-password-error" class="error-text hidden">Contraseña incorrecta. Verifica e inténtalo de nuevo.</p>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <div class="modal-footer-end">
+                        <button type="button" class="btn btn-secondary" onclick="closeReleasePasswordModal()">Cancelar</button>
+                        <button type="submit" class="btn btn-danger">Liberar número</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+    <script>
+        // =========================================================
+        // CONSTANTES Y ESTADO INICIAL
+        // =========================================================
+        const STORAGE_KEY = 'rifa_bolsos_wayuu_00_99_v1';
+        const CHANNEL_NAME = 'rifa_bolsos_wayuu_live_sync';
+        const SECURITY_CODE = 'pegasso';
+
+        const DEFAULT_CONFIG = {
+            title: 'Gestor de Rifa 00 - 99',
+            prize: 'Bolsos Wayuu',
+            price: 10000
+        };
+
+        let currentFilter = 'all';
+        let currentSearch = '';
+        let savedTicketPhone = '';
+        let isPhoneFullRevealed = false;
+
+        let broadcastChannel = null;
+        try {
+            if ('BroadcastChannel' in window) {
+                broadcastChannel = new BroadcastChannel(CHANNEL_NAME);
+            }
+        } catch (err) {
+            broadcastChannel = null;
+        }
+
+        function createFreshTickets() {
+            const tickets = {};
+            for (let i = 0; i < 100; i++) {
+                const code = String(i).padStart(2, '0');
+                tickets[code] = {
+                    number: code,
+                    status: 'available', // 'available' | 'pending' | 'paid'
+                    name: '',
+                    phone: '',
+                    notes: ''
+                };
+            }
+            return tickets;
+        }
+
+        function loadState() {
+            const fallback = {
+                config: { ...DEFAULT_CONFIG },
+                tickets: createFreshTickets()
+            };
+
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (!raw) return fallback;
+                const parsed = JSON.parse(raw);
+
+                const config = {
+                    title: typeof parsed?.config?.title === 'string' && parsed.config.title.trim()
+                        ? parsed.config.title.trim()
+                        : DEFAULT_CONFIG.title,
+                    prize: typeof parsed?.config?.prize === 'string' && parsed.config.prize.trim()
+                        ? parsed.config.prize.trim()
+                        : DEFAULT_CONFIG.prize,
+                    price: Number.isFinite(Number(parsed?.config?.price)) && Number(parsed.config.price) >= 0
+                        ? Number(parsed.config.price)
+                        : DEFAULT_CONFIG.price
+                };
+
+                const tickets = createFreshTickets();
+                if (parsed?.tickets && typeof parsed.tickets === 'object') {
+                    for (let i = 0; i < 100; i++) {
+                        const code = String(i).padStart(2, '0');
+                        const item = parsed.tickets[code];
+                        if (item && typeof item === 'object') {
+                            const validStatus = ['available', 'pending', 'paid'].includes(item.status)
+                                ? item.status
+                                : 'available';
+                            tickets[code] = {
+                                number: code,
+                                status: validStatus,
+                                name: typeof item.name === 'string' ? item.name : '',
+                                phone: typeof item.phone === 'string' ? item.phone : '',
+                                notes: typeof item.notes === 'string' ? item.notes : ''
+                            };
+                        }
+                    }
+                }
+
+                return { config, tickets };
+            } catch (err) {
+                console.error('Error leyendo estado de localStorage:', err);
+                return fallback;
+            }
+        }
+
+        let state = loadState();
+
+        function saveState(notifyPeers = true) {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+                if (notifyPeers && broadcastChannel) {
+                    broadcastChannel.postMessage({ type: 'RAFFLE_UPDATED', timestamp: Date.now() });
+                }
+            } catch (err) {
+                console.error('Error guardando estado en localStorage:', err);
+                showToast('No se pudo guardar localmente el cambio.', true);
+            }
+        }
+
+        // Sincronización entre pestañas/ventanas en vivo
+        window.addEventListener('storage', (event) => {
+            if (event.key === STORAGE_KEY) {
+                state = loadState();
+                renderAll();
+                showToast('Tablero sincronizado en tiempo real');
+            }
+        });
+
+        if (broadcastChannel) {
+            broadcastChannel.onmessage = (event) => {
+                if (event?.data?.type === 'RAFFLE_UPDATED') {
+                    state = loadState();
+                    renderAll();
+                }
+            };
+        }
+
+        // =========================================================
+        // UTILIDADES DE FORMATO Y PRIVACIDAD
+        // =========================================================
+        function formatCOP(amount) {
+            const num = Math.round(Number(amount) || 0);
+            return '$' + num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        }
+
+        function maskPhoneLast3(phoneStr) {
+            const digits = String(phoneStr || '').replace(/\D/g, '');
+            if (!digits) return '';
+            const last3 = digits.slice(-3);
+            return '••••••' + last3;
+        }
+
+        function escapeHtml(text) {
+            return String(text || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+
+        // =========================================================
+        // RENDERIZADO PRINCIPAL
+        // =========================================================
+        function renderAll() {
+            const price = Number(state.config.price) || 0;
+            const totalGoal = price * 100;
+
+            document.title = `${state.config.title} | ${state.config.prize}`;
+            document.getElementById('header-title').textContent = state.config.title;
+            document.getElementById('header-prize-chip').textContent = `Premio: ${state.config.prize}`;
+            document.getElementById('meta-prize').textContent = state.config.prize;
+            document.getElementById('meta-price').textContent = formatCOP(price);
+            document.getElementById('meta-goal').textContent = formatCOP(totalGoal);
+
+            const list = Object.values(state.tickets);
+            const availableCount = list.filter(t => t.status === 'available').length;
+            const pendingCount = list.filter(t => t.status === 'pending').length;
+            const paidCount = list.filter(t => t.status === 'paid').length;
+
+            const pendingAmount = pendingCount * price;
+            const collectedAmount = paidCount * price;
+            const occupiedCount = pendingCount + paidCount;
+
+            document.getElementById('stat-available').textContent = availableCount;
+            document.getElementById('stat-pending').textContent = pendingCount;
+            document.getElementById('stat-pending-sub').textContent = `Por confirmar pago (${formatCOP(pendingAmount)})`;
+            document.getElementById('stat-paid').textContent = paidCount;
+            document.getElementById('stat-collected').textContent = formatCOP(collectedAmount);
+            document.getElementById('stat-goal-sub').textContent = `Meta: ${formatCOP(totalGoal)}`;
+
+            document.getElementById('progress-summary').textContent =
+                `${formatCOP(collectedAmount)} de ${formatCOP(totalGoal)} recaudado · ${occupiedCount}% ocupado`;
+
+            document.getElementById('bar-paid').style.width = `${paidCount}%`;
+            document.getElementById('bar-pending').style.width = `${pendingCount}%`;
+
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                const filter = btn.dataset.filter;
+                if (filter === 'all') btn.textContent = 'Todas (100)';
+                if (filter === 'available') btn.textContent = `Disponibles (${availableCount})`;
+                if (filter === 'pending') btn.textContent = `Pendientes (${pendingCount})`;
+                if (filter === 'paid') btn.textContent = `Pagadas (${paidCount})`;
+            });
+
+            renderGrid();
+        }
+
+        function renderGrid() {
+            const grid = document.getElementById('numbers-grid');
+            const emptyState = document.getElementById('empty-state');
+            grid.innerHTML = '';
+
+            const query = currentSearch.trim().toLowerCase();
+            let visibleCount = 0;
+
+            for (let i = 0; i < 100; i++) {
+                const code = String(i).padStart(2, '0');
+                const ticket = state.tickets[code];
+
+                if (currentFilter !== 'all' && ticket.status !== currentFilter) {
+                    continue;
+                }
+
+                if (query) {
+                    const matchNumber = ticket.number.includes(query);
+                    const matchName = (ticket.name || '').toLowerCase().includes(query);
+                    const matchLast3 = String(ticket.phone || '').replace(/\D/g, '').slice(-3).includes(query);
+                    if (!matchNumber && !matchName && !matchLast3) {
+                        continue;
+                    }
+                }
+
+                visibleCount++;
+
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = `ticket-btn is-${ticket.status}`;
+                btn.setAttribute('aria-label', `Boleta número ${ticket.number}, estado ${ticket.status}`);
+                btn.onclick = () => openTicketModal(ticket.number);
+
+                let tagText = 'Libre';
+                let ownerText = 'Disponible';
+
+                if (ticket.status === 'pending') {
+                    tagText = 'Pendiente';
+                    ownerText = ticket.name ? ticket.name.trim() : 'Reservado';
+                } else if (ticket.status === 'paid') {
+                    tagText = 'Pagado';
+                    ownerText = ticket.name ? ticket.name.trim() : 'Pagado';
+                }
+
+                btn.innerHTML = `
+                    <span class="ticket-status-tag">${tagText}</span>
+                    <span class="ticket-number">${ticket.number}</span>
+                    <span class="ticket-owner">${escapeHtml(ownerText)}</span>
+                `;
+
+                grid.appendChild(btn);
+            }
+
+            if (visibleCount === 0) {
+                grid.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+            } else {
+                grid.classList.remove('hidden');
+                emptyState.classList.add('hidden');
+            }
+        }
+
+        // =========================================================
+        // FILTROS Y BÚSQUEDA
+        // =========================================================
+        function setFilter(filter) {
+            currentFilter = filter;
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.filter === filter);
+            });
+            renderGrid();
+        }
+
+        function handleSearch(value) {
+            currentSearch = value || '';
+            const clearBtn = document.getElementById('clear-search-btn');
+            clearBtn.classList.toggle('visible', currentSearch.trim().length > 0);
+            renderGrid();
+        }
+
+        function clearSearch() {
+            const input = document.getElementById('search-input');
+            input.value = '';
+            handleSearch('');
+            input.focus();
+        }
+
+        function resetFilters() {
+            clearSearch();
+            setFilter('all');
+        }
+
+        // =========================================================
+        // MODAL DE BOLETA Y PRIVACIDAD TELEFÓNICA
+        // =========================================================
+        function openTicketModal(code) {
+            const ticket = state.tickets[code];
+            if (!ticket) return;
+
+            savedTicketPhone = ticket.phone || '';
+            isPhoneFullRevealed = false;
+
+            document.getElementById('edit-ticket-number').value = ticket.number;
+            document.getElementById('ticket-modal-badge').textContent = ticket.number;
+            document.getElementById('ticket-modal-title').textContent = `Boleta #${ticket.number}`;
+            document.getElementById('ticket-modal-subtitle').textContent =
+                `Valor: ${formatCOP(state.config.price)} · Premio: ${state.config.prize}`;
+
+            const radioValue = ticket.status === 'available' ? 'paid' : ticket.status;
+            const radio = document.querySelector(`input[name="ticket-status"][value="${radioValue}"]`);
+            if (radio) radio.checked = true;
+
+            document.getElementById('buyer-name').value = ticket.name || '';
+            document.getElementById('buyer-phone').value = savedTicketPhone;
+            document.getElementById('buyer-notes').value = ticket.notes || '';
+
+            const releaseBtn = document.getElementById('release-ticket-btn');
+            releaseBtn.style.display = ticket.status === 'available' ? 'none' : 'inline-flex';
+
+            syncPhonePrivacyUI();
+            handleTicketStatusChange();
+
+            document.getElementById('ticket-modal').classList.add('open');
+            setTimeout(() => document.getElementById('buyer-name').focus(), 40);
+        }
+
+        function closeTicketModal() {
+            savedTicketPhone = '';
+            isPhoneFullRevealed = false;
+            document.getElementById('ticket-modal').classList.remove('open');
+        }
+
+        function syncPhonePrivacyUI() {
+            const maskedBox = document.getElementById('masked-phone-box');
+            const maskedDisplay = document.getElementById('masked-phone-display');
+            const revealBtn = document.getElementById('reveal-phone-btn');
+            const hideBtn = document.getElementById('hide-phone-btn');
+            const phoneInput = document.getElementById('buyer-phone');
+            const helpText = document.getElementById('phone-privacy-help');
+
+            const hasExistingPhone = Boolean(String(savedTicketPhone || '').trim());
+
+            if (!hasExistingPhone) {
+                maskedBox.classList.add('hidden');
+                phoneInput.classList.remove('hidden');
+                helpText.textContent = 'Al guardar un teléfono, se mostrará solo con los últimos 3 dígitos hasta usar "Ver teléfono completo".';
+                return;
+            }
+
+            maskedBox.classList.remove('hidden');
+
+            if (isPhoneFullRevealed) {
+                maskedDisplay.textContent = phoneInput.value || savedTicketPhone;
+                revealBtn.classList.add('hidden');
+                hideBtn.classList.remove('hidden');
+                phoneInput.classList.remove('hidden');
+                helpText.textContent = 'Teléfono completo revelado. Puedes editarlo si es necesario.';
+            } else {
+                maskedDisplay.textContent = maskPhoneLast3(savedTicketPhone);
+                revealBtn.classList.remove('hidden');
+                hideBtn.classList.add('hidden');
+                phoneInput.classList.add('hidden');
+                helpText.textContent = 'Se muestran solo los últimos 3 dígitos. Pulsa "Ver teléfono completo" e ingresa la contraseña para verlo entero.';
+            }
+        }
+
+        function handlePhoneInputChange() {
+            const val = document.getElementById('buyer-phone').value;
+            if (isPhoneFullRevealed) {
+                document.getElementById('masked-phone-display').textContent = val || '••••••000';
+            }
+        }
+
+        function openPhonePasswordModal() {
+            const input = document.getElementById('phone-password-input');
+            input.value = '';
+            input.type = 'password';
+            clearPhonePasswordError();
+            document.getElementById('phone-password-modal').classList.add('open');
+            setTimeout(() => input.focus(), 40);
+        }
+
+        function closePhonePasswordModal() {
+            document.getElementById('phone-password-modal').classList.remove('open');
+        }
+
+        function clearPhonePasswordError() {
+            const input = document.getElementById('phone-password-input');
+            const err = document.getElementById('phone-password-error');
+            input.classList.remove('shake');
+            err.classList.add('hidden');
+        }
+
+        function verifyPhonePassword(e) {
+            e.preventDefault();
+            const input = document.getElementById('phone-password-input');
+            const err = document.getElementById('phone-password-error');
+            const entered = input.value.trim();
+
+            if (entered !== SECURITY_CODE) {
+                err.classList.remove('hidden');
+                input.classList.remove('shake');
+                void input.offsetWidth;
+                input.classList.add('shake');
+                input.focus();
+                input.select();
+                return;
+            }
+
+            isPhoneFullRevealed = true;
+            closePhonePasswordModal();
+            syncPhonePrivacyUI();
+            showToast('Teléfono completo revelado');
+        }
+
+        function maskPhoneAgain() {
+            isPhoneFullRevealed = false;
+            syncPhonePrivacyUI();
+            showToast('Teléfono ocultado (solo últimos 3 dígitos)');
+        }
+
+        function handleTicketStatusChange() {
+            const selected = document.querySelector('input[name="ticket-status"]:checked')?.value || 'available';
+            const buyerGroup = document.getElementById('buyer-fields-group');
+            const badge = document.getElementById('ticket-modal-badge');
+
+            if (selected === 'available') {
+                buyerGroup.style.opacity = '0.45';
+                buyerGroup.style.pointerEvents = 'none';
+                badge.style.background = '#059669';
+            } else if (selected === 'pending') {
+                buyerGroup.style.opacity = '1';
+                buyerGroup.style.pointerEvents = 'auto';
+                badge.style.background = '#d97706';
+            } else {
+                buyerGroup.style.opacity = '1';
+                buyerGroup.style.pointerEvents = 'auto';
+                badge.style.background = '#4f46e5';
+            }
+        }
+
+        function saveTicket(e) {
+            e.preventDefault();
+            const code = document.getElementById('edit-ticket-number').value;
+            const status = document.querySelector('input[name="ticket-status"]:checked')?.value || 'available';
+            const name = document.getElementById('buyer-name').value.trim();
+            const phone = document.getElementById('buyer-phone').value.trim();
+            const notes = document.getElementById('buyer-notes').value.trim();
+
+            if (status !== 'available' && !name) {
+                showToast('Ingresa el nombre del comprador', true);
+                document.getElementById('buyer-name').focus();
+                return;
+            }
+
+            if (status === 'available') {
+                state.tickets[code] = { number: code, status: 'available', name: '', phone: '', notes: '' };
+                showToast(`Boleta #${code} marcada como Libre`);
+            } else {
+                state.tickets[code] = { number: code, status, name, phone, notes };
+                const statusLabel = status === 'paid' ? 'Pagada' : 'Pendiente';
+                showToast(`Boleta #${code} guardada como ${statusLabel}`);
+            }
+
+            saveState(true);
+            renderAll();
+            closeTicketModal();
+        }
+
+        function releaseCurrentTicket() {
+            const code = document.getElementById('edit-ticket-number').value;
+            if (!code) return;
+            openReleasePasswordModal(code);
+        }
+
+        function openReleasePasswordModal(code) {
+            const badge = document.getElementById('release-ticket-badge');
+            const text = document.getElementById('release-ticket-text');
+            if (badge) badge.textContent = `#${code}`;
+            if (text) text.textContent = `#${code}`;
+
+            const input = document.getElementById('release-password-input');
+            input.value = '';
+            input.type = 'password';
+            clearReleasePasswordError();
+            document.getElementById('release-password-modal').classList.add('open');
+            setTimeout(() => input.focus(), 40);
+        }
+
+        function closeReleasePasswordModal() {
+            document.getElementById('release-password-modal').classList.remove('open');
+        }
+
+        function clearReleasePasswordError() {
+            const input = document.getElementById('release-password-input');
+            const err = document.getElementById('release-password-error');
+            input.classList.remove('shake');
+            err.classList.add('hidden');
+        }
+
+        function confirmReleaseWithPassword(e) {
+            e.preventDefault();
+            const code = document.getElementById('edit-ticket-number').value;
+            const input = document.getElementById('release-password-input');
+            const err = document.getElementById('release-password-error');
+            const entered = input.value.trim();
+
+            if (entered !== SECURITY_CODE) {
+                err.classList.remove('hidden');
+                input.classList.remove('shake');
+                void input.offsetWidth;
+                input.classList.add('shake');
+                input.focus();
+                input.select();
+                return;
+            }
+
+            state.tickets[code] = { number: code, status: 'available', name: '', phone: '', notes: '' };
+            saveState(true);
+            renderAll();
+            closeReleasePasswordModal();
+            closeTicketModal();
+            showToast(`Boleta #${code} liberada`);
+        }
+
+        // =========================================================
+        // CONFIGURACIÓN DE RIFA
+        // =========================================================
+        function openConfigModal() {
+            document.getElementById('cfg-title').value = state.config.title;
+            document.getElementById('cfg-prize').value = state.config.prize;
+            document.getElementById('cfg-price').value = state.config.price;
+            document.getElementById('config-modal').classList.add('open');
+        }
+
+        function closeConfigModal() {
+            document.getElementById('config-modal').classList.remove('open');
+        }
+
+        function saveConfig(e) {
+            e.preventDefault();
+            const title = document.getElementById('cfg-title').value.trim() || DEFAULT_CONFIG.title;
+            const prize = document.getElementById('cfg-prize').value.trim() || DEFAULT_CONFIG.prize;
+            const rawPrice = Number(document.getElementById('cfg-price').value);
+            const price = Number.isFinite(rawPrice) && rawPrice >= 0 ? rawPrice : DEFAULT_CONFIG.price;
+
+            state.config = { title, prize, price };
+            saveState(true);
+            renderAll();
+            closeConfigModal();
+            showToast('Configuración de la rifa actualizada');
+        }
+
+        // =========================================================
+        // REINICIAR RIFA CON CÓDIGO 'pegasso'
+        // =========================================================
+        function openResetModal() {
+            const input = document.getElementById('reset-code-input');
+            input.value = '';
+            input.type = 'password';
+            clearResetError();
+            document.getElementById('reset-modal').classList.add('open');
+            setTimeout(() => input.focus(), 40);
+        }
+
+        function closeResetModal() {
+            document.getElementById('reset-modal').classList.remove('open');
+        }
+
+        function clearResetError() {
+            const input = document.getElementById('reset-code-input');
+            const err = document.getElementById('reset-code-error');
+            input.classList.remove('shake');
+            err.classList.add('hidden');
+        }
+
+        function confirmResetRaffle(e) {
+            e.preventDefault();
+            const input = document.getElementById('reset-code-input');
+            const err = document.getElementById('reset-code-error');
+            const code = input.value.trim();
+
+            if (code !== SECURITY_CODE) {
+                err.classList.remove('hidden');
+                input.classList.remove('shake');
+                void input.offsetWidth;
+                input.classList.add('shake');
+                input.focus();
+                input.select();
+                return;
+            }
+
+            state.tickets = createFreshTickets();
+            saveState(true);
+            resetFilters();
+            renderAll();
+            closeResetModal();
+            showToast('Rifa reiniciada: todos los números del 00 al 99 están libres');
+        }
+
+        // =========================================================
+        // EXPORTAR CSV COMPATIBLE CON EXCEL
+        // =========================================================
+        function exportToCSV() {
+            const headers = ['Numero', 'Estado', 'Comprador', 'Telefono_Ultimos_3', 'Valor_Boleta', 'Recaudado', 'Notas'];
+            const rows = [headers.join(';')];
+            const statusLabels = {
+                available: 'Libre',
+                pending: 'Pendiente',
+                paid: 'Pagado'
+            };
+            const price = Number(state.config.price) || 0;
+
+            for (let i = 0; i < 100; i++) {
+                const code = String(i).padStart(2, '0');
+                const t = state.tickets[code];
+                const collected = t.status === 'paid' ? price : 0;
+                const maskedPhone = t.phone ? maskPhoneLast3(t.phone) : '';
+                const esc = (val) => `"${String(val || '').replace(/"/g, '""')}"`;
+
+                rows.push([
+                    esc(t.number),
+                    esc(statusLabels[t.status] || 'Libre'),
+                    esc(t.name),
+                    esc(maskedPhone),
+                    price,
+                    collected,
+                    esc(t.notes)
+                ].join(';'));
+            }
+
+            const bom = '\uFEFF';
+            const blob = new Blob([bom + rows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            const slugPrize = (state.config.prize || 'rifa').toLowerCase().replace(/[^a-z0-9]+/g, '-');
+            link.href = url;
+            link.download = `rifa-00-99-${slugPrize}.csv`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            showToast('Archivo CSV exportado correctamente');
+        }
+
+        // =========================================================
+        // UTILIDADES DE INTERFAZ Y ATAJOS
+        // =========================================================
+        function togglePasswordVisibility(inputId) {
+            const input = document.getElementById(inputId);
+            if (!input) return;
+            input.type = input.type === 'password' ? 'text' : 'password';
+            input.focus();
+        }
+
+        function showToast(message, isError = false) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast' + (isError ? ' error' : '');
+            toast.textContent = message;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 2900);
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeReleasePasswordModal();
+                closePhonePasswordModal();
+                closeTicketModal();
+                closeConfigModal();
+                closeResetModal();
+            }
+        });
+
+        // Renderizado inicial
+        renderAll();
+    </script>
+
+    <!-- SINCRONIZACIÓN EN TIEMPO REAL CON FIREBASE REALTIME DATABASE -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCZ0Z-GXxXnqyzx2PEDc-Ma964HPU23QZ4",
+            authDomain: "rifa-wayuu.firebaseapp.com",
+            databaseURL: "https://rifa-wayuu-default-rtdb.firebaseio.com",
+            projectId: "rifa-wayuu",
+            storageBucket: "rifa-wayuu.firebasestorage.app",
+            messagingSenderId: "203646745494",
+            appId: "1:203646745494:web:da3f0d03722f7071cbfbb7",
+            measurementId: "G-QL1LQFY4Z8"
+        };
+
+        const RTDB_NODE = "rifa_bolsos_wayuu_00_99";
+
+        let dbRef = null;
+        let isCloudReady = false;
+        let isApplyingCloudUpdate = false;
+
+        function setLiveBadge(mode, message) {
+            const badge = document.getElementById("live-sync-badge");
+            const text = document.getElementById("live-sync-text");
+            if (!badge || !text) return;
+            badge.classList.remove("is-local", "is-error");
+            if (mode === "local") badge.classList.add("is-local");
+            if (mode === "error") badge.classList.add("is-error");
+            text.textContent = message;
+        }
+
+        function normalizeCloudState(raw) {
+            const safeConfig = {
+                title: typeof raw?.config?.title === "string" && raw.config.title.trim()
+                    ? raw.config.title.trim()
+                    : DEFAULT_CONFIG.title,
+                prize: typeof raw?.config?.prize === "string" && raw.config.prize.trim()
+                    ? raw.config.prize.trim()
+                    : DEFAULT_CONFIG.prize,
+                price: Number.isFinite(Number(raw?.config?.price)) && Number(raw.config.price) >= 0
+                    ? Number(raw.config.price)
+                    : DEFAULT_CONFIG.price
+            };
+
+            const safeTickets = createFreshTickets();
+            if (raw?.tickets && typeof raw.tickets === "object") {
+                for (let i = 0; i < 100; i++) {
+                    const code = String(i).padStart(2, "0");
+                    const item = raw.tickets[code];
+                    if (item && typeof item === "object") {
+                        const validStatus = ["available", "pending", "paid"].includes(item.status)
+                            ? item.status
+                            : "available";
+                        safeTickets[code] = {
+                            number: code,
+                            status: validStatus,
+                            name: typeof item.name === "string" ? item.name : "",
+                            phone: typeof item.phone === "string" ? item.phone : "",
+                            notes: typeof item.notes === "string" ? item.notes : ""
+                        };
+                    }
+                }
+            }
+
+            return { config: safeConfig, tickets: safeTickets };
+        }
+
+        async function syncToFirebase() {
+            if (!dbRef) return;
+            try {
+                await set(dbRef, {
+                    config: state.config,
+                    tickets: state.tickets,
+                    updatedAt: Date.now()
+                });
+                if (isCloudReady) {
+                    setLiveBadge("live", "En vivo · Firebase");
+                }
+            } catch (err) {
+                console.error("Error sincronizando con Firebase Realtime Database:", err);
+                isCloudReady = false;
+                setLiveBadge("error", "Sin nube · Respaldo local");
+            }
+        }
+
+        const originalSaveState = window.saveState;
+        window.saveState = function (notifyPeers = true) {
+            originalSaveState(notifyPeers);
+            if (!isApplyingCloudUpdate) {
+                syncToFirebase();
+            }
+        };
+
+        try {
+            const app = initializeApp(firebaseConfig);
+            const database = getDatabase(app);
+            dbRef = ref(database, RTDB_NODE);
+
+            setLiveBadge("local", "Conectando en vivo...");
+
+            onValue(
+                dbRef,
+                (snapshot) => {
+                    isCloudReady = true;
+                    setLiveBadge("live", "En vivo · Firebase");
+
+                    if (snapshot.exists()) {
+                        const cloudState = normalizeCloudState(snapshot.val());
+                        isApplyingCloudUpdate = true;
+                        state.config = cloudState.config;
+                        state.tickets = cloudState.tickets;
+                        originalSaveState(false);
+                        renderAll();
+                        isApplyingCloudUpdate = false;
+                    } else {
+                        syncToFirebase();
+                    }
+                },
+                (error) => {
+                    console.error("Error en listener de Firebase Realtime Database:", error);
+                    isCloudReady = false;
+                    setLiveBadge("error", "Error nube · Respaldo local");
+                }
+            );
+        } catch (err) {
+            console.error("Error inicializando Firebase:", err);
+            isCloudReady = false;
+            setLiveBadge("local", "Respaldo local activo");
+        }
+    </script>
+</body>
+</html>
